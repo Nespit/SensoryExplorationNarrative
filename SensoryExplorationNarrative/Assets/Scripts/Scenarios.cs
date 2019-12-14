@@ -4,13 +4,11 @@ using UnityEngine;
 
 public struct Scenario
 {
-    public int scenarioID;
     public string mainText;
     public Interaction[] scenarioInteractions;
 
-    public Scenario(int ID, string text, Interaction[] interactions)
-    {
-        scenarioID = ID;
+    public Scenario(string text, Interaction[] interactions)
+    {  
         mainText = text;
         scenarioInteractions = interactions;
     }
@@ -18,13 +16,13 @@ public struct Scenario
 
 public struct Interaction
 {
-    public interactionTypes interactionType; //used to determine the button sprite.
+    public InteractionTypes interactionType; //used to determine the button sprite.
 
     public string interactionDescription;
 
     public int outcome; //move to scenarioID
 
-    public Interaction(interactionTypes type, string description, int outc)
+    public Interaction(InteractionTypes type, string description, int outc)
     {
         interactionType = type;
         interactionDescription = description;
@@ -33,7 +31,7 @@ public struct Interaction
 
 }
 
-public enum interactionTypes
+public enum InteractionTypes
 {
     none,
     touch,
