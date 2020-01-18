@@ -6,10 +6,10 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     private static GameManager _instance;
-/*     private Scenario[] scenarios = new Scenario[10]; */
     private int scenarioCount;
     public Text mainText;
-    public Text buttonText;
+    public Text gameButtonText;
+    public Text menuButtonText;
     public Button listenButton;
     private string listenButtonText;
     public Button feelButton;
@@ -22,6 +22,13 @@ public class GameManager : MonoBehaviour
     private string firstButtonText;
     public Button secondButton;
     private string secondButtonText;
+    public Button startButton;
+    public Button resumeButton;
+    public Button restartButton;
+    public Button endButton;
+    public Canvas menuUI;
+    public Canvas gameUI;
+    GameState gameState;
     Dictionary<uint, ScenarioLambda> scenarios = new Dictionary<uint, ScenarioLambda>();
 
     public static GameManager Instance
@@ -146,6 +153,10 @@ public class GameManager : MonoBehaviour
     {
         DontDestroyOnLoad(gameObject);
 
+        gameUI.gameObject.SetActive(false);
+        menuUI.gameObject.SetActive(true);
+        gameState = GameState.initial;
+
         scenarios.Add(0x1001, new ScenarioLambda(() => { 
                 SetText("You suddenly gain consciousness again…. Everythings is dark around…. What do you want to do?"); 
 
@@ -183,151 +194,103 @@ public class GameManager : MonoBehaviour
                 });
                 }
             ));
+    }
 
+    void Update()
+    {   
+        if(gameState == GameState.game && Input.GetKeyDown(KeyCode.Escape))
+        {
+            OpenMenu();
+        }
+
+        else if(gameState == GameState.menu && Input.GetKeyDown(KeyCode.Escape))
+        {
+            ResumeGame();
+        }
+    }
+
+    public void StartGame()
+    {
+        gameUI.gameObject.SetActive(true);
+        menuUI.gameObject.SetActive(false);
+        startButton.gameObject.SetActive(false);
+        resumeButton.gameObject.SetActive(true);
+        restartButton.gameObject.SetActive(true);
+        gameState = GameState.game;
+        MouseExit();
         scenarios[0x1001].action();
+    }
+
+    public void ResumeGame()
+    {
+        gameUI.gameObject.SetActive(true);
+        menuUI.gameObject.SetActive(false);
+        MouseExit();
+        gameState = GameState.game;
+    }
+
+    public void OpenMenu()
+    {
+        gameUI.gameObject.SetActive(false);
+        menuUI.gameObject.SetActive(true);
+        MouseExit();
+        gameState = GameState.menu;
+    }
+    public void EndGame()
+    {
+        Application.Quit();
     }
 
     public void ListenMouseEnter()
     {
-        buttonText.text = listenButtonText;
+        gameButtonText.text = listenButtonText;
     }
     public void FeelMouseEnter()
     {
-        buttonText.text = feelButtonText;
+        gameButtonText.text = feelButtonText;
     }
     public void LookMouseEnter()
     {
-        buttonText.text = lookButtonText;
+        gameButtonText.text = lookButtonText;
     }
     public void SmellMouseEnter()
     {
-        buttonText.text = smellButtonText;
+        gameButtonText.text = smellButtonText;
     }
     public void FirstMouseEnter()
     {
-        buttonText.text = firstButtonText;
+        gameButtonText.text = firstButtonText;
     }
     public void SecondMouseEnter()
     {
-        buttonText.text = secondButtonText;
+        gameButtonText.text = secondButtonText;
+    }
+    public void StartMouseEnter()
+    {
+        menuButtonText.text = "Start the game.";
+    }
+    public void ResumeMouseEnter()
+    {
+        menuButtonText.text = "Resume the game.";
+    }
+    public void RestartMouseEnter()
+    {
+        menuButtonText.text = "Restart the game.";
+    }
+    public void EndMouseEnter()
+    {
+        menuButtonText.text = "End the game.";
     }
     public void MouseExit()
     {
-        buttonText.text = "";
+        gameButtonText.text = "";
+        menuButtonText.text = "";
     }
+}
 
-/* 
-    void Start()
-    {
-        scenarioCount = scenarios.Length;
-
-        for(int i = 0; i < scenarioCount; ++i)
-        {
-            switch (i)
-            {
-                case 0:
-                    Interaction[] interaction = new Interaction[3];
-                    int outcome = 1;
-                    interaction[0] = new Interaction(InteractionTypes.listen, "Listen", outcome);
-                    outcome = 2;
-                    interaction[1] = new Interaction(InteractionTypes.smell, "Smell", outcome);
-                    outcome = 3;
-                    interaction[2] = new Interaction(InteractionTypes.touch, "Touch", outcome);
-
-                    Scenario scenario = new Scenario("You suddenly gain consciousness again…. Everythings is dark around…. What do you want to do?", interaction);
-                    scenarios[i] = scenario;
-                    break;
-                case 1:
-                    interaction = new Interaction[2];
-                    outcome = 4;
-                    interaction[0] = new Interaction(InteractionTypes.first, "1.Water pouring out of an open sink.", outcome);
-                    outcome = 5;
-                    interaction[1] = new Interaction(InteractionTypes.second, "Someone splashing in a pool.", outcome);
-                    
-                    scenario = new Scenario("You hear something that seems to be water - What do you think it was?", interaction);
-                    scenarios[i] = scenario;
-                    break;
-                case 2:
-                    interaction = new Interaction[2];
-                    outcome = 6;
-                    interaction[0] = new Interaction(InteractionTypes.first, "1. A nice mature cheddar", outcome);
-                    outcome = 7;
-                    interaction[1] = new Interaction(InteractionTypes.second, "2.Cheese puffs", outcome);
-
-                    scenario = new Scenario("You take a big gulp of air in. As you do, an intense smell penetrates your lung. Something pungent and sharp. Like a old mature cheddar - What do you think it was?", interaction);
-                    scenarios[i] = scenario;
-                    break;
-                case 3:
-                    interaction = new Interaction[2];
-                    outcome = 8;
-                    interaction[0] = new Interaction(InteractionTypes.first, "1. A clump of hair.", outcome);
-                    outcome = 9;
-                    interaction[1] = new Interaction(InteractionTypes.second, "2. A plastic net.", outcome);
-
-                    scenario = new Scenario("You feel around blindly with our outstretched palm. They are underwater. You find fuzzy, wet strands tingling between your fingers. - What do you think it is?", interaction);
-                    scenarios[i] = scenario;
-                    break;
-                case 4:
-                    interaction = new Interaction[2];
-                    outcome = 0;
-                    interaction[0] = new Interaction(InteractionTypes.first, "Get closer to it.", outcome);
-                    outcome = 0;
-                    interaction[1] = new Interaction(InteractionTypes.second, "Ignore it.", outcome);
-
-                    scenario = new Scenario("Water pouring out of an open sink. What do you want to do?", interaction);
-                    scenarios[i] = scenario;
-                    break;
-                case 5:
-                    interaction = new Interaction[2];
-                    outcome = 0;
-                    interaction[0] = new Interaction(InteractionTypes.first, "Get closer to it.", outcome);
-                    outcome = 0;
-                    interaction[1] = new Interaction(InteractionTypes.second, "Ignore it.", outcome);
-
-                    scenario = new Scenario("Someone splashing in a pool. What do you want to do?", interaction);
-                    scenarios[i] = scenario;
-                    break;
-                case 6:
-                    interaction = new Interaction[2];
-                    outcome = 0;
-                    interaction[0] = new Interaction(InteractionTypes.first, "Take a bite out of it.", outcome);
-                    outcome = 0;
-                    interaction[1] = new Interaction(InteractionTypes.second, "Nothing", outcome);
-
-                    scenario = new Scenario("A nice mature cheddar. What do you want to do?", interaction);
-                    scenarios[i] = scenario;
-                    break;
-                case 7:
-                    interaction = new Interaction[2];
-                    outcome = 0;
-                    interaction[0] = new Interaction(InteractionTypes.first, "Eat them!", outcome);
-                    outcome = 0;
-                    interaction[1] = new Interaction(InteractionTypes.second, "Nothing", outcome);
-
-                    scenario = new Scenario("Cheese puffs. What do you want to do?", interaction);
-                    scenarios[i] = scenario;
-                    break;
-                case 8:
-                    interaction = new Interaction[2];
-                    outcome = 0;
-                    interaction[0] = new Interaction(InteractionTypes.first, "Grab it.", outcome);
-                    outcome = 0;
-                    interaction[1] = new Interaction(InteractionTypes.second, "Nothing", outcome);
-
-                    scenario = new Scenario("A clump of hair. What do you want to do?", interaction);
-                    scenarios[i] = scenario;
-                    break;
-                case 9:
-                    interaction = new Interaction[2];
-                    outcome = 0;
-                    interaction[0] = new Interaction(InteractionTypes.first, "Grab it.", outcome);
-                    outcome = 0;
-                    interaction[1] = new Interaction(InteractionTypes.second, "Nothing", outcome);
-
-                    scenario = new Scenario("A plastic net. What do you want to do?", interaction);
-                    scenarios[i] = scenario;
-                    break;
-            }
-        }
-    } */
+public enum GameState
+{
+    initial,
+    game,
+    menu
 }
